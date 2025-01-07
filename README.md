@@ -1,2 +1,7 @@
 # brh-segmented-control
-SwiftUI control that mimics the segmented Picker but with style
+
+Swift package with a new control that mimics the SwiftUI Picker with the segmented style.
+
+![](demo.gif)
+
+
