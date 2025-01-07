@@ -1,6 +1,6 @@
 # BRHSegmentedControl
 
-Swift package with a new control that mimics the SwiftUI Picker with the segmented style.
+Swift package with a SwiftUI control that mimics the SwiftUI Picker using the segmented style.
 
 ![](demo.gif)
 
@@ -24,6 +24,7 @@ Additional features:
 * Easy to create segments using text labels - `.init(selectedIndex: $selected, ["One", "Two", "Buckle", "Shoe"])`
 * Segments can have their own custom views by providing your own `@ViewBuilder` method
 * Supports custom styling of the segment view's foreground via your own `ShapeStyle` method
+* Supports disabling animations via custom view modifier `disableAnimations`
 
 # Using
 
@@ -45,3 +46,11 @@ Simply add the `brh-segment-control` package to your `Package.swift` file or add
 For examples of how to use, see the `PreviewContent` struct in
 [BRHSegmentedControl.swift](Sources/BRHSegmentedControl/BRHSegmentedControl.swift). There are also the unit tests that
 exercise the API which show additional examples.
+
+The default view builder methods are in
+[BRHSegmentedControlSupport.swift](Sources/BRHSegmentedControl/BRHSegmentedControlSupport.swift). Creating custom ones
+is easy and offers greater control of segment content. There are two versions, one taking one `Int` argument, and
+another that takes an `Int` and a `String`. The second one is required when you provide a collection of strings in the
+`init` method. The first argument is the segment's index to generate, and the second argument is the value from the
+collection given in the `init`.
+
