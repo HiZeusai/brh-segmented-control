@@ -54,3 +54,16 @@ another that takes an `Int` and a `String`. The second one is required when you 
 `init` method. The first argument is the segment's index to generate, and the second argument is the value from the
 collection given in the `init`.
 
+# Credits
+
+I wrote all of the code in this repository with the exception of the `Color` extension to allow for light/dark color
+selecting in code. That comes courtesy of
+[Jesse Squires's](https://github.com/jessesquires) 
+[blog post](https://www.jessesquires.com/blog/2023/07/11/creating-dynamic-colors-in-swiftui/). In my own AUv3 project 
+I first started to use
+[CustomizableSegmentedControl](https://github.com/Inxel/CustomizableSegmentedControl) by
+[Tyoma Zagoskin](https://github.com/Inxel), but I then decided to try and replicate Apple's implementation and so here we are.
+Finally, [this post](https://stackoverflow.com/a/77799451/629836) on StackOverflow by 
+[Benzy Neez](https://stackoverflow.com/users/20386264/benzy-neez) helped me wire up the `DragGesture` correctly to handle 
+drag interactions with the segment. It was truly the missing piece that magically brought everything together where I could 
+at least mimic if not fully replicate the little details in Apple's implementation.
