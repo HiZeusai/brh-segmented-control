@@ -137,7 +137,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       RoundedRectangle(cornerRadius: cornerRadius)
         .fill(.gray.opacity(0.2))
     }
-    .onChange(of: selectedIndex.wrappedValue) { _, newValue in
+    .reactToChange(of: selectedIndex.wrappedValue) { newValue in
       if newValue != pendingIndex {
         withAnimation(indicatorAnimation) {
           pendingIndex = newValue
@@ -254,7 +254,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       let isInsideSegment = bounds.contains(dragLocation)
 
       Color.clear
-        .onChange(of: isInsideSegment) { _, isInside in
+        .reactToChange(of: isInsideSegment) { isInside in
           guard index.isSegmentIndex, dragging != .done else { return }
 
           let segmentIndex = index.asSegmentIndex
@@ -278,6 +278,18 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
             }
           }
         }
+    }
+  }
+}
+
+extension View {
+
+  @ViewBuilder
+  func reactToChange<V: Equatable>(of value: V, closure: @escaping (V) -> Void) -> some View {
+    if #available(iOS 17.0, macOS 14.0, *) {
+      self.onChange(of: value) { _, newValue in closure(newValue) }
+    } else {
+      self.onChange(of: value, perform: closure)
     }
   }
 }
