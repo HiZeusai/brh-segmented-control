@@ -12,6 +12,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.17.0"),
+    .package(url: "https://github.com/nalexn/ViewInspector", from: "0.10.1"),
   ],
   targets: [
     .target(
@@ -20,7 +21,8 @@ let package = Package(
       name: "BRHSegmentedControlTests",
       dependencies: [
         "BRHSegmentedControl",
-        .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+        .product(name: "ViewInspector", package: "ViewInspector"),
       ]
     ),
   ]

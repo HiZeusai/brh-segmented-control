@@ -1,10 +1,23 @@
 import SnapshotTesting
 import SwiftUI
+import ViewInspector
 import XCTest
 @testable import BRHSegmentedControl
 
-final class InitTests: XCTestCase {
-  let recordingMode: SnapshotTestingConfiguration.Record = .missing
+final class BRHSegmentedControlTests: XCTestCase {
+  let recordingMode: SnapshotTestingConfiguration.Record = .failed
+
+  @MainActor
+  func testInitWithInvalidSelectedIndex() async throws {
+    try withSnapshotTesting(record: recordingMode) {
+      var selectedIndex = -1
+      let view = BRHSegmentedControl(
+        selectedIndex: Binding(get: { selectedIndex }, set: { selectedIndex = $0 }),
+        count: 4
+      )
+      try assertSnapshot(matching: view, colorScheme: .light)
+    }
+  }
 
   @MainActor
   func testInitWithCountLight() async throws {
@@ -110,6 +123,34 @@ final class InitTests: XCTestCase {
           }
         }).disableAnimations(true)
       try assertSnapshot(matching: view, colorScheme: .dark)
+    }
+  }
+
+  @MainActor
+  func DISABLE_testInspectionUsage() async throws {
+    var selectedIndex = 1
+    let sut = BRHSegmentedControl(
+      selectedIndex: Binding(get: { selectedIndex }, set: { selectedIndex = $0 }),
+      count: 2
+    )
+    let control = try sut.inspect().find(ViewType.HStack.self)
+    XCTAssertNoThrow(try control.gesture(DragGesture.self))
+    ViewHosting.host(view: sut)
+  }
+
+  @MainActor
+  func testPreviewRenderLight() async throws {
+    try withSnapshotTesting(record: recordingMode) {
+      let view = PreviewContent()
+      try assertSnapshot(matching: view, size: CGSize(width: 400, height: 400), colorScheme: .light)
+    }
+  }
+
+  @MainActor
+  func testPreviewRenderDark() async throws {
+    try withSnapshotTesting(record: recordingMode) {
+      let view = PreviewContent()
+      try assertSnapshot(matching: view, size: CGSize(width: 400, height: 400), colorScheme: .dark)
     }
   }
 }

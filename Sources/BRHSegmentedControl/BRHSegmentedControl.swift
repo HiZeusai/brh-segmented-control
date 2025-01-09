@@ -41,7 +41,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
   private var indicatorAnimation: Animation { .smooth(duration: disableAnimations ? 0.0 : 0.2) }
   private var foregroundStyleAnimation: Animation { .smooth(duration: disableAnimations ? 0.0 : 0.5) }
 
-  private enum Dragging {
+  internal enum Dragging {
     case start      // start of a dragging gesture
     case indicator  // dragging started in the selected segment
     case nothing    // dragging started in elsewhere
@@ -60,10 +60,10 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
 
   // The new selected segment. Updated via drag movements. Once a drag is done, the value it holds will be used to
   // update the `selectedIndex` value.
-  @State private var pendingIndex: Int
+  @State internal var pendingIndex: Int
   // Would be nice to combine dragging and dragLocation into one state managed by the DragGesture, but that would
   // require combining the per-segment `dragDetector` and the `DragGesture.updating` methods into one.
-  @State private var dragging: Dragging = .done
+  @State internal var dragging: Dragging = .done
   @GestureState private var dragLocation: CGPoint = .zero
   // or geometry changes involving the selected segment
   @Namespace private var namespace
@@ -128,6 +128,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       case let .labels(labels, wrapper): generateViews(labels: labels, builder: wrapper)
       }
     }
+    .gesture(makeGesture())
     .background {
       if showIndicator {
         selectedIndicator
@@ -137,14 +138,15 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       RoundedRectangle(cornerRadius: cornerRadius)
         .fill(.gray.opacity(0.2))
     }
-    .reactToChange(of: selectedIndex.wrappedValue) { newValue in
-      if newValue != pendingIndex {
-        withAnimation(indicatorAnimation) {
-          pendingIndex = newValue
-        }
+    .reactToChange(of: selectedIndex.wrappedValue, calling: selectedIndexChanged)
+  }
+
+  internal func selectedIndexChanged(newValue: Int) {
+    if newValue != pendingIndex {
+      withAnimation(indicatorAnimation) {
+        pendingIndex = newValue
       }
     }
-    .gesture(makeGesture())
   }
 
   private func generateViews(count: Int, builder: VB1) -> some View {
@@ -171,7 +173,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
     }
   }
 
-  private func segmentedState(for index: Int) -> BRHSegmentedControlSupport.SegmentState {
+  internal func segmentedState(for index: Int) -> BRHSegmentedControlSupport.SegmentState {
     if case .nothing = dragging {
       if pendingViewIndex == index && pendingIndex != selectedIndex.wrappedValue {
         return .touched
@@ -221,22 +223,25 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
     // Zero min distance so that it will start immediately upon a touch. The location is used by the `dragDetector`
     // method below to update UI state as the touch moves.
     let dragGesture = DragGesture(minimumDistance: 0.0, coordinateSpace: .global)
-      .updating($dragLocation) { val, state, trans in
-        if dragging == .done {
-          dragging = .start
-        }
-        state = val.location
-      }
-      .onEnded { value in
-        withAnimation(indicatorAnimation) {
-          dragging = .done
-          if pendingIsValid {
-            selectedIndex.wrappedValue = pendingIndex
-          }
-        }
-      }
-
+      .updating($dragLocation) { val, state, trans in dragGestureUpdate(val: val, state: &state, trans: trans) }
+      .onEnded { _ in dragGestureEnded() }
     return dragGesture
+  }
+
+  internal func dragGestureUpdate(val: DragGesture.Value, state: inout CGPoint, trans: Transaction) {
+    if dragging == .done {
+      dragging = .start
+    }
+    state = val.location
+  }
+
+  internal func dragGestureEnded() {
+    withAnimation(indicatorAnimation) {
+      dragging = .done
+      if pendingIsValid {
+        selectedIndex.wrappedValue = pendingIndex
+      }
+    }
   }
 
   /**
@@ -247,37 +252,39 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
    - dragging in an unselected segment to dim the segment's title and make the segment's index pending
    - dragging out of an unselected segment to undim and cancel the pending index
    */
-  private func dragDetector(index: Int) -> some View {
+  internal func dragDetector(index: Int) -> some View {
     GeometryReader { proxy in
       let frame = proxy.frame(in: .global)
       let bounds = frame.insetBy(dx: 0, dy: -frame.height * dragging.heightMultiplier)
       let isInsideSegment = bounds.contains(dragLocation)
 
       Color.clear
-        .reactToChange(of: isInsideSegment) { isInside in
-          guard index.isSegmentIndex, dragging != .done else { return }
+        .reactToChange(of: isInsideSegment) { dragMovement(index: index, isInside: $0) }
+    }
+  }
 
-          let segmentIndex = index.asSegmentIndex
-          if dragging == .start && isInside {
-            withAnimation(indicatorAnimation) {
-              dragging = pendingIndex == segmentIndex && pendingIsValid ? .indicator : .nothing
-            }
-          }
+  internal func dragMovement(index: Int, isInside: Bool) {
+    guard index.isSegmentIndex, dragging != .done else { return }
 
-          if isInside {
-            if pendingIndex != segmentIndex {
-              withAnimation(indicatorAnimation) {
-                // This either moves the indicator or dims a segment's label depending on dragging state
-                pendingIndex = segmentIndex
-              }
-            }
-          } else if dragging == .nothing && pendingIndex == segmentIndex {
-            withAnimation(indicatorAnimation) {
-              // Revert an index change since the touch moved too far away from segment.
-              pendingIndex = selectedIndex.wrappedValue
-            }
-          }
+    let segmentIndex = index.asSegmentIndex
+    if dragging == .start && isInside {
+      withAnimation(indicatorAnimation) {
+        dragging = pendingIndex == segmentIndex && pendingIsValid ? .indicator : .nothing
+      }
+    }
+
+    if isInside {
+      if pendingIndex != segmentIndex {
+        withAnimation(indicatorAnimation) {
+          // This either moves the indicator or dims a segment's label depending on dragging state
+          pendingIndex = segmentIndex
         }
+      }
+    } else if dragging == .nothing && pendingIndex == segmentIndex {
+      withAnimation(indicatorAnimation) {
+        // Revert an index change since the touch moved too far away from segment.
+        pendingIndex = selectedIndex.wrappedValue
+      }
     }
   }
 }
@@ -285,7 +292,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
 extension View {
 
   @ViewBuilder
-  func reactToChange<V: Equatable>(of value: V, closure: @escaping (V) -> Void) -> some View {
+  internal func reactToChange<V: Equatable>(of value: V, calling closure: @escaping (V) -> Void) -> some View {
     if #available(iOS 17.0, macOS 14.0, *) {
       self.onChange(of: value) { _, newValue in closure(newValue) }
     } else {
@@ -311,7 +318,7 @@ extension BRHSegmentedControl {
   }
 }
 
-private struct PreviewContent: View {
+internal struct PreviewContent: View {
   let numbers = ["1", "2", "3", "4"]
   let letters = ["A", "B", "C", "D"]
   let systemImages = ["a.circle", "b.circle", "c.circle", "d.circle"]
