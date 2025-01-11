@@ -128,7 +128,9 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       case let .labels(labels, wrapper): generateViews(labels: labels, builder: wrapper)
       }
     }
-    .gesture(makeGesture())
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+    .gesture(makeDragGesture())
+#endif
     .background {
       if showIndicator {
         selectedIndicator
@@ -190,7 +192,9 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       .frame(minHeight: segmentMinHeight)
       .padding(.horizontal)
       .matchedGeometryEffect(id: index, in: namespace, isSource: true)
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
       .background(dragDetector(index: index))
+#endif
   }
 
   // Mimic Apple's style by hiding the dividers that are adjacent to the active segment
@@ -218,7 +222,9 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       )
   }
 
-  private func makeGesture() -> some Gesture {
+#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+
+  private func makeDragGesture() -> some Gesture {
     // The DragGesture provides the necessary functionality to replicate Apple's segmented style behavior.
     // Zero min distance so that it will start immediately upon a touch. The location is used by the `dragDetector`
     // method below to update UI state as the touch moves.
@@ -287,13 +293,16 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       }
     }
   }
+
+#endif
+
 }
 
 extension View {
 
   @ViewBuilder
   internal func reactToChange<V: Equatable>(of value: V, calling closure: @escaping (V) -> Void) -> some View {
-    if #available(iOS 17.0, macOS 14.0, *) {
+    if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
       self.onChange(of: value) { _, newValue in closure(newValue) }
     } else {
       self.onChange(of: value, perform: closure)
@@ -360,6 +369,7 @@ internal struct PreviewContent: View {
           }
         }.environment(\.disableAnimations, true)
       }
+#if os(iOS) || os(tvOS) || os(macOS) || targetEnvironment(macCatalyst)
       VStack {
         Text("Apple's Picker w/ segmented style")
           .font(.footnote)
@@ -373,6 +383,7 @@ internal struct PreviewContent: View {
         }
         .pickerStyle(SegmentedPickerStyle())
       }
+#endif
       HStack() {
         Spacer()
         Toggle(isOn: $customTintColor) {
