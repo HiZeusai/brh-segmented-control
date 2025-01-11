@@ -7,7 +7,7 @@ let package = Package(
   platforms: [.iOS(.v15), .macOS(.v12)],
   products: [
     .library(
-      name: "brh-segmented-control",
+      name: "BRHSegmentedControl",
       targets: ["BRHSegmentedControl"]),
   ],
   dependencies: [
