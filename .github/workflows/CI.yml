@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-
       - name: Update mtime for incremental builds
-        uses: chetan/git-restore-mtime-actions@v2
+        uses: chetan/git-restore-mtime-action@v2
       - name: Debug
         run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
   build:
