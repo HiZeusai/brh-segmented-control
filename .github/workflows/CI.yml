@@ -52,7 +52,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Install visionOS runtime
       - name: List available devices
         run: xcrun simctl list devices available 
       - name: Cache derived data
