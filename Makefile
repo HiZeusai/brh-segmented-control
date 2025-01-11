@@ -1,58 +1,51 @@
-CONFIG = Debug
-
-DERIVED_DATA_PATH = ~/.derivedData/$(CONFIG)
-
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone [0-9][0-9]* Pro [^M])
+PLATFORM_IOS = iOS Simulator,name=iPad mini (A17 Pro)
 PLATFORM_MACOS = macOS
-PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
-PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS,TV)
-PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS,Vision)
-PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS,Watch)
+XCCOV = xcrun xccov view --report --only-targets
 
-PLATFORM = IOS
-DESTINATION = platform="$(PLATFORM_$(PLATFORM))"
+default: report
 
-PLATFORM_ID = $(shell echo "$(DESTINATION)" | sed -E "s/.+,id=(.+)/\1/")
+test-iOS:
+	rm -rf "$(PWD)/.DerivedData-iOS"
+	xcodebuild test \
+		-scheme brh-segmented-control \
+		-derivedDataPath "$(PWD)/.DerivedData-iOS" \
+		-destination platform="$(PLATFORM_IOS)" \
+		-enableCodeCoverage YES
 
-SCHEME = BRHSegmentedControl
+coverage-iOS: test-iOS
+	$(XCCOV) $(PWD)/.DerivedData-iOS/Logs/Test/*.xcresult > coverage_iOS.txt
+	echo "iOS Coverage:"
+	cat coverage_iOS.txt
 
-WORKSPACE = .github/package.xcworkspace
+percentage-iOS: coverage-iOS
+	awk '/ brh-segmented-control / { print $$4 }' coverage_iOS.txt > percentage_iOS.txt
+	echo "iOS Coverage Pct:"
+	cat percentage_iOS.txt
 
-XCODEBUILD_ARGUMENT = test
+test-macOS:
+	rm -rf "$(PWD)/.DerivedData-macOS"
+	USE_UNSAFE_FLAGS="1" xcodebuild test \
+		-scheme brh-segmented-control \
+		-derivedDataPath "$(PWD)/.DerivedData-macOS" \
+		-destination platform="$(PLATFORM_MACOS)" \
+		-enableCodeCoverage YES
 
-XCODEBUILD_FLAGS = \
-	-configuration $(CONFIG) \
-	-derivedDataPath $(DERIVED_DATA_PATH) \
-	-destination $(DESTINATION) \
-	-scheme "$(SCHEME)" \
-	-skipMacroValidation \
-	-workspace $(WORKSPACE)
+coverage-macOS: test-macOS
+	$(XCCOV) $(PWD)/.DerivedData-macOS/Logs/Test/*.xcresult > coverage_macOS.txt
+	echo "macOS Coverage:"
+	cat coverage_macOS.txt
 
-XCODEBUILD_COMMAND = xcodebuild $(XCODEBUILD_ARGUMENT) $(XCODEBUILD_FLAGS)
+percentage-macOS: coverage-macOS
+	awk '/ brh-segmented-control / { print $$4 }' coverage_macOS.txt > percentage_macOS.txt
+	echo "macOS Coverage Pct:"
+	cat percentage_macOS.txt
 
-ifneq ($(strip $(shell which xcbeautify)),)
-	XCODEBUILD = set -o pipefail && $(XCODEBUILD_COMMAND) | xcbeautify --quiet
-else
-	XCODEBUILD = $(XCODEBUILD_COMMAND)
-endif
+report: percentage-iOS percentage-macOS
+	@if [[ -n "$$GITHUB_ENV" ]]; then \
+        echo "PERCENTAGE=$$(< percentage_macOS.txt)" >> $$GITHUB_ENV; \
+    fi
 
-TEST_RUNNER_CI = $(CI)
+.PHONY: report test-iOS test-macOS coverage-iOS coverage-macOS coverage-iOS percentage-macOS percentage-iOS
 
-warm-simulator:
-	@test "$(PLATFORM_ID)" != "" \
-		&& xcrun simctl boot $(PLATFORM_ID) \
-		&& open -a Simulator --args -CurrentDeviceUDID $(PLATFORM_ID) \
-		|| exit 0
-
-xcodebuild: warm-simulator
-	$(XCODEBUILD)
-
-# Workaround for debugging Swift Testing tests: https://github.com/cpisciotta/xcbeautify/issues/313
-xcodebuild-raw: warm-simulator
-	$(XCODEBUILD_COMMAND)
-
-.PHONY: warm-simulator xcodebuild
-
-define udid_for
-$(shell xcrun simctl list devices available '$(1)' | grep '$(2)' | sort -r | head -1 | awk -F '[()]' '{ print $$(NF-3) }')
-endef
+clean:
+	-rm -rf $(PWD)/.DerivedData-macOS $(PWD)/.DerivedData-iOS coverage*.txt percentage*.txt
