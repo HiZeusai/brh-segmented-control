@@ -14,8 +14,11 @@ import SwiftUI
  implementation but (IMO) it is very close.
  */
 public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: ShapeStyle>: View {
+#if swift(>=6.0)
   @Environment(\.disableAnimations) var disableAnimations
-
+#else
+  private let disableAnimations = false
+#endif
   private struct VB1 { @ViewBuilder let build: (Int) -> SegmentView }
   private struct VB2 { @ViewBuilder let build: (Int, String) -> SegmentView }
 
@@ -317,8 +320,10 @@ fileprivate extension Int {
   var isSegmentIndex: Bool { self % 2 == 0 }
 }
 
+#if swift(>=6.0)
+
 extension EnvironmentValues {
-  @Entry var disableAnimations: Bool = false
+  @Entry public var disableAnimations: Bool = false
 }
 
 extension BRHSegmentedControl {
@@ -326,6 +331,8 @@ extension BRHSegmentedControl {
     environment(\.disableAnimations, value)
   }
 }
+
+#endif
 
 internal struct PreviewContent: View {
   let numbers = ["1", "2", "3", "4"]
@@ -355,7 +362,7 @@ internal struct PreviewContent: View {
         })
       }
       VStack {
-        Text("Segment builder w/ foreground styler, no animations")
+        Text("Segment builder w/ foreground styler")
           .font(.footnote)
           .italic()
         BRHSegmentedControl(selectedIndex: $selectedIndex, count: numbers.count) { index in
@@ -367,7 +374,10 @@ internal struct PreviewContent: View {
           case .touched: return .secondary
           case .selected: return Color(light: Color.white, dark: Color.black)
           }
-        }.environment(\.disableAnimations, true)
+        }
+#if swift(>=6.0)
+        .environment(\.disableAnimations, true)
+#endif
       }
 #if os(iOS) || os(tvOS) || os(macOS) || targetEnvironment(macCatalyst)
       VStack {
