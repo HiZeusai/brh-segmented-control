@@ -104,7 +104,10 @@ final class BRHSegmentedControlTests: XCTestCase {
           case .touched: return .yellow
           case .none: return .orange
           }
-        }).disableAnimations(true)
+        })
+#if swift(>=6.0)
+        .disableAnimations(true)
+#endif
       try assertSnapshot(matching: view, colorScheme: .light)
     }
   }
@@ -121,7 +124,10 @@ final class BRHSegmentedControlTests: XCTestCase {
           case .touched: return .yellow
           case .none: return .orange
           }
-        }).disableAnimations(true)
+        })
+#if swift(>=6.0)
+        .disableAnimations(true)
+#endif
       try assertSnapshot(matching: view, colorScheme: .dark)
     }
   }
