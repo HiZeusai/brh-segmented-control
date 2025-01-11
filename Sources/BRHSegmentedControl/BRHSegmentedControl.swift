@@ -309,7 +309,7 @@ fileprivate extension Int {
 }
 
 extension EnvironmentValues {
-  @Entry fileprivate var disableAnimations: Bool = false
+  @Entry var disableAnimations: Bool = false
 }
 
 extension BRHSegmentedControl {
