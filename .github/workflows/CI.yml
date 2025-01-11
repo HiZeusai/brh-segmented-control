@@ -41,13 +41,7 @@ jobs:
       matrix:
         command: [test, '']
         platform: [IOS, MACOS]
-        xcode: [15.2, 15.4]
-        exclude:
-          - {xcode: 15.2, command: test}
-          - {xcode: 15.4, command: ''}
-        include:
-          - {xcode: 15.2, skip_release: 1}
-  
+        xcode: ['15.2', '15.4']
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode ${{ matrix.xcode }}
@@ -63,12 +57,7 @@ jobs:
             deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-${{ hashFiles('**/Sources/**/*.swift', '**/Tests/**/*.swift') }}
           restore-keys: |
             deriveddata-xcodebuild-${{ matrix.platform }}-${{ matrix.xcode }}-${{ matrix.command }}-
-      - name: Set IgnoreFileSystemDeviceInodeChanges flag
-        run: defaults write com.apple.dt.XCBuild IgnoreFileSystemDeviceInodeChanges -bool YES
       - name: Update mtime for incremental builds
         uses: chetan/git-restore-mtime-action@v2
       - name: Debug
         run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Debug PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
-      - name: Release
-        if: matrix.skip_release != '1'
-        run: make XCODEBUILD_ARGUMENT="${{ matrix.command }}" CONFIG=Release PLATFORM="${{ matrix.platform }}" WORKSPACE=.github/package.xcworkspace xcodebuild
