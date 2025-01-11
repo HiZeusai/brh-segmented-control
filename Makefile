@@ -2,7 +2,7 @@ CONFIG = Debug
 
 DERIVED_DATA_PATH = ~/.derivedData/$(CONFIG)
 
-PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone \d\+ Pro [^M])
+PLATFORM_IOS = iOS Simulator,id=$(call udid_for,iOS,iPhone [0-9][0-9]* Pro [^M])
 PLATFORM_MACOS = macOS
 PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS,TV)
@@ -14,9 +14,9 @@ DESTINATION = platform="$(PLATFORM_$(PLATFORM))"
 
 PLATFORM_ID = $(shell echo "$(DESTINATION)" | sed -E "s/.+,id=(.+)/\1/")
 
-SCHEME = brh-segmented-control
+SCHEME = BRHSegmentedControl
 
-WORKSPACE = BRHSegmentedControl.xcworkspace
+WORKSPACE = .github/package.xcworkspace
 
 XCODEBUILD_ARGUMENT = test
 
