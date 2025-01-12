@@ -1,6 +1,5 @@
 import SnapshotTesting
 import SwiftUI
-import ViewInspector
 import XCTest
 @testable import BRHSegmentedControl
 
@@ -132,17 +131,17 @@ final class BRHSegmentedControlTests: XCTestCase {
     }
   }
 
-  @MainActor
-  func DISABLE_testInspectionUsage() async throws {
-    var selectedIndex = 1
-    let sut = BRHSegmentedControl(
-      selectedIndex: Binding(get: { selectedIndex }, set: { selectedIndex = $0 }),
-      count: 2
-    )
-    let control = try sut.inspect().find(ViewType.HStack.self)
-    XCTAssertNoThrow(try control.gesture(DragGesture.self))
-    ViewHosting.host(view: sut)
-  }
+//  @MainActor
+//  func DISABLE_testInspectionUsage() async throws {
+//    var selectedIndex = 1
+//    let sut = BRHSegmentedControl(
+//      selectedIndex: Binding(get: { selectedIndex }, set: { selectedIndex = $0 }),
+//      count: 2
+//    )
+//    let control = try sut.inspect().find(ViewType.HStack.self)
+//    XCTAssertNoThrow(try control.gesture(DragGesture.self))
+//    ViewHosting.host(view: sut)
+//  }
 
   @MainActor
   func testPreviewRenderLight() async throws {
