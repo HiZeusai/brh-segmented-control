@@ -52,13 +52,13 @@ public enum BRHSegmentedControlSupport {
    - parameter state to style for
    - returns: Color to use for the foreground styling of the segment's view
    */
-  public static func defaultForegroundStyler(_ state: SegmentState) -> Color {
+  public static func defaultForegroundStyler(_ state: SegmentState) -> some ShapeStyle {
     // Mimic Apple's style by dimming content of a non-selected segment when touch position enters it; undim when
     // it leaves.
     switch state {
-    case .none: return .primary
-    case .touched: return .secondary
-    case .selected: return .primary
+    case .none: return Color.primary
+    case .touched: return Color.secondary
+    case .selected: return Color.primary
     }
   }
 }

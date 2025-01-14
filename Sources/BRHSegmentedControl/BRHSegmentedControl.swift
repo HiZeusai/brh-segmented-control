@@ -353,28 +353,13 @@ internal struct PreviewContent: View {
         Text("Strings w/ foreground styler")
           .font(.footnote)
           .italic()
-        BRHSegmentedControl(selectedIndex: $selectedIndex, labels: letters, styler: { state in
-          switch state {
-          case .none: return Color.indigo
-          case .touched: return .blue
-          case .selected: return .green
-          }
-        })
+        BRHSegmentedControl(selectedIndex: $selectedIndex, labels: letters, styler: styler1)
       }
       VStack {
         Text("Segment builder w/ foreground styler")
           .font(.footnote)
           .italic()
-        BRHSegmentedControl(selectedIndex: $selectedIndex, count: numbers.count) { index in
-          Label(numbers[index], systemImage: systemImages[index])
-            .labelStyle(.iconOnly)
-        } styler: { state in
-          switch state {
-          case .none: return Color.primary
-          case .touched: return .secondary
-          case .selected: return Color(light: Color.white, dark: Color.black)
-          }
-        }
+        BRHSegmentedControl(selectedIndex: $selectedIndex, count: numbers.count, builder: builder, styler: styler2)
 #if swift(>=6.0)
         .environment(\.disableAnimations, true)
 #endif
@@ -404,6 +389,27 @@ internal struct PreviewContent: View {
     }
     .tint(customTintColor ? .red : .accentColor)
     .animation(.smooth, value: customTintColor)
+  }
+
+  private func builder(_ index: Int) -> some View {
+    Label(numbers[index], systemImage: systemImages[index])
+      .labelStyle(.iconOnly)
+  }
+
+  private func styler1(_ state: BRHSegmentedControlSupport.SegmentState) -> some ShapeStyle {
+    switch state {
+      case .none: return Color.indigo
+      case .touched: return Color.blue
+      case .selected: return Color.green
+    }
+  }
+
+  private func styler2(_ state: BRHSegmentedControlSupport.SegmentState) -> some ShapeStyle {
+    switch state {
+    case .none: return Color.primary
+    case .touched: return Color.secondary
+    case .selected: return Color(light: Color.white, dark: Color.black)
+    }
   }
 }
 
