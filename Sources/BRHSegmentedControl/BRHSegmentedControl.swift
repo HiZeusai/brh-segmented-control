@@ -344,21 +344,15 @@ internal struct PreviewContent: View {
   var body: some View {
     VStack(spacing: 16) {
       VStack {
-        Text("Simple integer labels")
-          .font(.footnote)
-          .italic()
+        header("Simple integer labels")
         BRHSegmentedControl(selectedIndex: $selectedIndex, count: numbers.count)
       }
       VStack {
-        Text("Strings w/ foreground styler")
-          .font(.footnote)
-          .italic()
+        header("Strings w/ foreground styler")
         BRHSegmentedControl(selectedIndex: $selectedIndex, labels: letters, styler: styler1)
       }
       VStack {
-        Text("Segment builder w/ foreground styler")
-          .font(.footnote)
-          .italic()
+        header("Segment builder w/ foreground styler")
         BRHSegmentedControl(selectedIndex: $selectedIndex, count: numbers.count, builder: builder, styler: styler2)
 #if swift(>=6.0)
         .environment(\.disableAnimations, true)
@@ -366,9 +360,7 @@ internal struct PreviewContent: View {
       }
 #if os(iOS) || os(tvOS) || os(macOS) || targetEnvironment(macCatalyst)
       VStack {
-        Text("Apple's Picker w/ segmented style")
-          .font(.footnote)
-          .italic()
+        header("Apple's Picker w/ segmented style")
         Picker(selection: $selectedIndex) {
           ForEach(numbers.indices, id: \.self) { index in
             Text(numbers[index])
@@ -391,16 +383,11 @@ internal struct PreviewContent: View {
     .animation(.smooth, value: customTintColor)
   }
 
-  private func builder(_ index: Int) -> some View {
-    Label(numbers[index], systemImage: systemImages[index])
-      .labelStyle(.iconOnly)
-  }
-
   private func styler1(_ state: BRHSegmentedControlSupport.SegmentState) -> some ShapeStyle {
     switch state {
-      case .none: return Color.indigo
-      case .touched: return Color.blue
-      case .selected: return Color.green
+    case .none: return Color.indigo
+    case .touched: return Color.blue
+    case .selected: return Color.green
     }
   }
 
@@ -410,6 +397,17 @@ internal struct PreviewContent: View {
     case .touched: return Color.secondary
     case .selected: return Color(light: Color.white, dark: Color.black)
     }
+  }
+
+  private func builder(_ index: Int) -> some View {
+    Label(numbers[index], systemImage: systemImages[index])
+      .labelStyle(.iconOnly)
+  }
+
+  private func header(_ text: String) -> some View {
+    Text(text)
+      .font(.footnote)
+      .italic()
   }
 }
 
