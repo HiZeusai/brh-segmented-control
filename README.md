@@ -45,27 +45,36 @@ Simply add the `brh-segment-control` package to your `Package.swift` file or add
   ),
 ```
 
-For examples of how to use, see the `PreviewContent` struct in
-[BRHSegmentedControl.swift](Sources/BRHSegmentedControl/BRHSegmentedControl.swift). There are also the unit tests that
-exercise the API which show additional examples.
+For examples of how to use, see the `PreviewContent` struct in [BRHSegmentedControl.swift][bsc]. There are also the 
+unit tests that exercise the API which show additional examples.
 
-The default view builder methods are in
-[BRHSegmentedControlSupport.swift](Sources/BRHSegmentedControl/BRHSegmentedControlSupport.swift). Creating custom ones
+The default view builder methods are in [BRHSegmentedControlSupport.swift][bscs]. Creating custom ones
 is easy and offers greater control of segment content. There are two versions, one taking one `Int` argument, and
 another that takes an `Int` and a `String`. The second one is required when you provide a collection of strings in the
 `init` method. The first argument is the segment's index to generate, and the second argument is the value from the
 collection given in the `init`.
 
+# Limitation on macOS
+
+The control will switch selections when clicked on, but currently there is no visible change in appearance when the 
+click takes place. This can be fixed with some minor effort.
+
 # Credits
 
 I wrote all of the code in this repository with the exception of the `Color` extension to allow for light/dark color
-selecting in code. That comes courtesy of
-[Jesse Squires's](https://github.com/jessesquires) 
-[blog post](https://www.jessesquires.com/blog/2023/07/11/creating-dynamic-colors-in-swiftui/). In my own AUv3 project 
-I first started to use
-[CustomizableSegmentedControl](https://github.com/Inxel/CustomizableSegmentedControl) by
-[Tyoma Zagoskin](https://github.com/Inxel), but I then decided to try and replicate Apple's implementation and so here we are.
-Finally, [this post](https://stackoverflow.com/a/77799451/629836) on StackOverflow by 
-[Benzy Neez](https://stackoverflow.com/users/20386264/benzy-neez) helped me wire up the `DragGesture` correctly to handle 
-drag interactions with the segment. It was truly the missing piece that magically brought everything together where I could 
-at least mimic if not fully replicate the little details in Apple's implementation.
+selecting in code. That comes courtesy of [Jesse Squires's][js] [blog post][bp]. In my own AUv3 project I first started 
+to use [CustomizableSegmentedControl][csc] by [Tyoma Zagoskin][tz], but I then decided to try and replicate Apple's 
+implementation and so here we are. Finally, [this post][so] on StackOverflow by [Benzy Neez][bn] helped me wire up 
+the `DragGesture` correctly to handle drag interactions with the segment. It was truly the missing piece that magically 
+brought everything together where I could at least mimic if not fully replicate the little details in Apple's 
+implementation.
+
+[js]: https://github.com/jessesquires
+[bp]: https://www.jessesquires.com/blog/2023/07/11/creating-dynamic-colors-in-swiftui
+[csc]: https://github.com/Inxel/CustomizableSegmentedControl
+[tz]: https://github.com/Inxel
+[so]: https://stackoverflow.com/a/77799451/629836
+[bn]: https://stackoverflow.com/users/20386264/benzy-neez
+
+[bsc]: Sources/BRHSegmentedControl/BRHSegmentedControl.swift
+[bscs]: Sources/BRHSegmentedControl/BRHSegmentedControlSupport.swift
