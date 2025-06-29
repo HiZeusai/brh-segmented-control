@@ -12,6 +12,10 @@ import SwiftUI
 
  This implementation strives to replicate the behavior Apple's `Picker` segmented style. It is not a pixel-perfect
  implementation but (IMO) it is very close.
+
+ NOTE: although this now works on macOS, it does not mimic the native control as well as it does on iOS. On macOS
+ it simply responds to tap events, but the native gesture highlights a segment when the segment is clicked, and
+ removes the highlight if the pointer moves outside of the segment. There is no dragging of the segment indicator.
  */
 public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: ShapeStyle>: View {
 #if swift(>=6.0)
@@ -131,7 +135,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       case let .labels(labels, wrapper): generateViews(labels: labels, builder: wrapper)
       }
     }
-#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst)
     .gesture(makeDragGesture())
 #endif
     .background {
@@ -195,8 +199,15 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       .frame(minHeight: segmentMinHeight)
       .padding(.horizontal)
       .matchedGeometryEffect(id: index, in: namespace, isSource: true)
-#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst)
       .background(dragDetector(index: index))
+#else
+      .contentShape(Rectangle())
+      .onTapGesture {
+        print(index, pendingIndex)
+        pendingIndex = index.asSegmentIndex
+        selectedIndex.wrappedValue = index.asSegmentIndex
+      }
 #endif
   }
 
@@ -225,21 +236,23 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       )
   }
 
-#if os(iOS) || os(macOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst)
 
   private func makeDragGesture() -> some Gesture {
     // The DragGesture provides the necessary functionality to replicate Apple's segmented style behavior.
     // Zero min distance so that it will start immediately upon a touch. The location is used by the `dragDetector`
     // method below to update UI state as the touch moves.
     let dragGesture = DragGesture(minimumDistance: 0.0, coordinateSpace: .global)
-      .updating($dragLocation) { val, state, trans in dragGestureUpdate(val: val, state: &state, trans: trans) }
+      .updating($dragLocation) { dragGestureUpdate(val: $0, state: &$1, trans: $2) }
       .onEnded { _ in dragGestureEnded() }
     return dragGesture
   }
 
   internal func dragGestureUpdate(val: DragGesture.Value, state: inout CGPoint, trans: Transaction) {
     if dragging == .done {
-      dragging = .start
+      withAnimation(indicatorAnimation) {
+        dragging = .start
+      }
     }
     state = val.location
   }
