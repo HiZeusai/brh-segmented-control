@@ -41,10 +41,10 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
   private let generator: Generator
   private let segmentForegroundStyler: (BRHSegmentedControlSupport.SegmentState) -> SegmentForegroundStyle
 
-  private let segmentMinHeight: CGFloat = 32.0
-  private let dividerHeight: CGFloat = 18.0
-  private let cornerRadius: CGFloat = 6.0
-  private let touchedScalingFactor: CGFloat = 0.9
+    private let segmentMinHeight: CGFloat = 40.0
+    private let dividerHeight: CGFloat = 18.0
+    private let cornerRadius: CGFloat = 22.0
+    private let touchedScalingFactor: CGFloat = 0.9
   private var indicatorAnimation: Animation { .smooth(duration: disableAnimations ? 0.0 : 0.2) }
   private var foregroundStyleAnimation: Animation { .smooth(duration: disableAnimations ? 0.0 : 0.5) }
 
@@ -145,7 +145,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
     }
     .background {
       RoundedRectangle(cornerRadius: cornerRadius)
-        .fill(.gray.opacity(0.2))
+        .fill(.clear)
     }
     .reactToChange(of: selectedIndex.wrappedValue, calling: selectedIndexChanged)
   }
@@ -197,6 +197,8 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
       .foregroundStyle(segmentForegroundStyler(segmentedState(for: index)))
       .animation(foregroundStyleAnimation, value: pendingIndex)
       .frame(minHeight: segmentMinHeight)
+      .frame(maxWidth: .infinity) // ← ✅ 新增这行
+      .contentShape(Rectangle())              // ✅ 用矩形定义可点区域（不再只限文字）
       .padding(.horizontal)
       .matchedGeometryEffect(id: index, in: namespace, isSource: true)
 #if os(iOS) || targetEnvironment(macCatalyst)
@@ -219,13 +221,17 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
     Rectangle()
       .fill(.clear)
       .background(dividerColor(index: index))
-      .frame(width: 1.0, height: dividerHeight)
+      .frame(width: 1.0, height: segmentMinHeight * 0.6)
       .disabled(true)
   }
 
   private var selectedIndicator: some View {
     RoundedRectangle(cornerRadius: cornerRadius)
       .fill(.tint)
+      .background( RoundedRectangle(cornerRadius: 22) .fill(Color.clear)
+            .overlay( RoundedRectangle(cornerRadius: 22) .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    )
+      )
     // Mimic Apple's style by slightly shrinking the selected indicator when touched
       .scaleEffect(dragging == .indicator ? touchedScalingFactor : 1.0)
       .animation(indicatorAnimation, value: dragging)
