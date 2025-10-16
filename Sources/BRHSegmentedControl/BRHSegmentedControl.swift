@@ -229,7 +229,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
     RoundedRectangle(cornerRadius: cornerRadius)
       .fill(.tint)
       .background( RoundedRectangle(cornerRadius: 22) .fill(Color.clear)
-            .overlay( RoundedRectangle(cornerRadius: 22) .stroke(Color.white.opacity(0.2), lineWidth: 1)
+            .overlay( RoundedRectangle(cornerRadius: 22) .stroke(Color.white.opacity(0.6), lineWidth: 1)
                     )
       )
     // Mimic Apple's style by slightly shrinking the selected indicator when touched
