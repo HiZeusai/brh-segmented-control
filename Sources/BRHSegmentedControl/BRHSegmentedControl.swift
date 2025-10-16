@@ -43,7 +43,7 @@ public struct BRHSegmentedControl<SegmentView: View, SegmentForegroundStyle: Sha
 
     private let segmentMinHeight: CGFloat = 40.0
     private let dividerHeight: CGFloat = 18.0
-    private let cornerRadius: CGFloat = 22.0
+    private let cornerRadius: CGFloat = 20.0
     private let touchedScalingFactor: CGFloat = 0.9
   private var indicatorAnimation: Animation { .smooth(duration: disableAnimations ? 0.0 : 0.2) }
   private var foregroundStyleAnimation: Animation { .smooth(duration: disableAnimations ? 0.0 : 0.5) }
